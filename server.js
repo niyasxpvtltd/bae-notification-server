@@ -57,7 +57,7 @@ try {
     db = getFirestore(fbApp);
     messaging = getMessaging(fbApp);
     firebaseInitialized = true;
-    console.log('✅ [FIREBASE_ADMIN] Initialized successfully for project: bae-firebase-3f86c');
+    console.log('✅ [FIREBASE_ADMIN] Initialized successfully for project: bae-project-e5bc1');
   } else {
     console.warn('⚠️ [FIREBASE_ADMIN] No credentials found. Notifications running in mock mode.');
   }
@@ -132,9 +132,9 @@ app.post('/api/notifications/male-online', async (req, res) => {
       return res.status(503).json({ success: false, error: 'Firebase Admin not initialized' });
     }
 
-    // Query female users
+    // Query female users (supports both 'Female' and 'female')
     const snapshot = await db.collection('users')
-      .where('gender', '==', 'female')
+      .where('gender', 'in', ['Female', 'female', 'FEMALE'])
       .limit(100)
       .get();
 
@@ -249,9 +249,9 @@ app.post('/api/notifications/female-online', async (req, res) => {
       return res.status(503).json({ success: false, error: 'Firebase Admin not initialized' });
     }
 
-    // Query male users
+    // Query male users (supports both 'Male' and 'male')
     const snapshot = await db.collection('users')
-      .where('gender', '==', 'male')
+      .where('gender', 'in', ['Male', 'male', 'MALE'])
       .limit(100)
       .get();
 

@@ -25,21 +25,31 @@ try {
   let credential = null;
   const serviceAccountPath = path.join(__dirname, 'firebase-service-account.json');
 
+  const getCert = (sa) => {
+    if (admin.credential && typeof admin.credential.cert === 'function') {
+      return admin.credential.cert(sa);
+    }
+    if (typeof admin.cert === 'function') {
+      return admin.cert(sa);
+    }
+    throw new Error('Neither admin.credential.cert nor admin.cert is available');
+  };
+
   // Option 1: Base64 string in env (ideal for Render to avoid multiline JSON issues)
   if (process.env.FIREBASE_SERVICE_ACCOUNT_B64) {
     const decoded = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_B64, 'base64').toString('utf8');
-    credential = admin.cert(JSON.parse(decoded));
+    credential = getCert(JSON.parse(decoded));
   }
   // Option 2: Raw JSON string in env
   else if (process.env.FIREBASE_SERVICE_ACCOUNT) {
     const parsed = typeof process.env.FIREBASE_SERVICE_ACCOUNT === 'string'
       ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
       : process.env.FIREBASE_SERVICE_ACCOUNT;
-    credential = admin.cert(parsed);
+    credential = getCert(parsed);
   }
   // Option 3: Local file
   else if (fs.existsSync(serviceAccountPath)) {
-    credential = admin.cert(require(serviceAccountPath));
+    credential = getCert(require(serviceAccountPath));
   }
 
   if (credential) {
@@ -334,4 +344,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   Firebase: ${firebaseInitialized ? 'Connected ✅' : 'Mock Mode ⚠️'}`);
   console.log(`=================================================`);
 });
+
 
